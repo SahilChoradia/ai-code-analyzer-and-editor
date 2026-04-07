@@ -67,14 +67,27 @@ export function isFolderNodeVisible(
 
 export type VisibilityOptions = {
   expandedFolders: Set<string>;
-  showFunctions: boolean;
-  /** File paths for which function children are shown */
-  expandedFunctionFiles: Set<string>;
-  /** Limit edges to imports only (no call / contains) */
+  /** File paths (posix) for which issue + function children are shown */
+  expandedFiles: Set<string>;
   directImportsOnly: boolean;
-  /** Only include paths under this prefix (normalized, no leading ./) */
   folderPrefix: string | null;
 };
+
+function pathsForEdgeEndpoints(source: string, target: string): string[] {
+  const out: string[] = [];
+  for (const id of [source, target]) {
+    if (id.startsWith("file:")) {
+      out.push(normPath(id.slice(5)));
+    } else if (id.startsWith("func:")) {
+      const rest = id.slice(5);
+      const h = rest.lastIndexOf("#");
+      if (h > 0) {
+        out.push(normPath(rest.slice(0, h)));
+      }
+    }
+  }
+  return out;
+}
 
 function passesFolderPrefix(path: string, prefix: string | null): boolean {
   if (prefix == null || prefix === "") {
@@ -86,8 +99,8 @@ function passesFolderPrefix(path: string, prefix: string | null): boolean {
 }
 
 /**
- * Build visible graph: folder nodes, file nodes, optional function nodes,
- * and edges (imports; optionally calls/contains).
+ * Build visible graph: folder nodes, file nodes, optional function nodes when file expanded,
+ * and edges (imports; optionally calls/contains for expanded files).
  */
 export function buildVisibleGraph(
   graph: VizGraphData,
@@ -134,30 +147,25 @@ export function buildVisibleGraph(
   }
 
   const funcNodes: VizGraphNode[] = [];
-  if (opts.showFunctions) {
-    for (const n of graph.nodes) {
-      if (n.kind !== "function") {
-        continue;
-      }
-      const fp = normPath(n.filePath);
-      if (!pathSet.has(fp)) {
-        continue;
-      }
-      if (!isFileVisibleForExpansion(fp, opts.expandedFolders)) {
-        continue;
-      }
-      if (!opts.expandedFunctionFiles.has(fp)) {
-        continue;
-      }
-      funcNodes.push(n);
-      visibleIds.add(n.id);
+  for (const n of graph.nodes) {
+    if (n.kind !== "function") {
+      continue;
     }
+    const fp = normPath(n.filePath);
+    if (!pathSet.has(fp)) {
+      continue;
+    }
+    if (!isFileVisibleForExpansion(fp, opts.expandedFolders)) {
+      continue;
+    }
+    if (!opts.expandedFiles.has(fp)) {
+      continue;
+    }
+    funcNodes.push(n);
+    visibleIds.add(n.id);
   }
 
-  const nodesOut: VizGraphNode[] = [
-    ...visibleFileNodes,
-    ...funcNodes,
-  ];
+  const nodesOut: VizGraphNode[] = [...visibleFileNodes, ...funcNodes];
 
   let edges = graph.edges.filter(
     (e) => visibleIds.has(e.source) && visibleIds.has(e.target),
@@ -171,7 +179,8 @@ export function buildVisibleGraph(
         return true;
       }
       if (e.kind === "call" || e.kind === "contains") {
-        return opts.showFunctions;
+        const paths = pathsForEdgeEndpoints(e.source, e.target);
+        return paths.some((p) => opts.expandedFiles.has(p));
       }
       return false;
     });
@@ -184,7 +193,7 @@ export function buildVisibleGraph(
   };
 }
 
-/** Layout-only edges: folder → folder (child), folder → direct file (dagre hints). */
+/** Layout-only edges: folder → folder, folder → file */
 export function buildHierarchyLayoutEdges(
   folderPaths: string[],
   fileNodes: VizGraphNode[],

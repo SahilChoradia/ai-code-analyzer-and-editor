@@ -5,8 +5,9 @@ import { memo, useMemo } from "react";
 import type { VizGraphNode } from "@/types/api";
 
 type FileNodeData = VizGraphNode & {
-  onExpandFunctions?: () => void;
-  functionsExpanded?: boolean;
+  detailExpanded?: boolean;
+  hasDetailChildren?: boolean;
+  onToggleFileExpand?: () => void;
 };
 
 function severityLevel(d: VizGraphNode): "clean" | "medium" | "critical" {
@@ -28,95 +29,89 @@ function severityLevel(d: VizGraphNode): "clean" | "medium" | "critical" {
   return "clean";
 }
 
-const severityRing: Record<string, string> = {
-  clean: "ring-emerald-500/80 bg-emerald-500/10 border-emerald-600/40",
-  medium: "ring-amber-500/80 bg-amber-500/12 border-amber-600/50",
-  critical: "ring-red-600/90 bg-red-500/15 border-red-600/60",
+const severityStyle: Record<string, string> = {
+  clean: "border-emerald-700/50 bg-emerald-950/30 ring-emerald-800/40",
+  medium: "border-amber-600/50 bg-amber-950/25 ring-amber-800/40",
+  critical: "border-red-600/60 bg-red-950/35 ring-red-800/50",
 };
 
 function FileFlowNodeInner(props: NodeProps) {
   const d = props.data as unknown as FileNodeData;
   const { selected } = props;
   const sev = severityLevel(d);
-  const ring = severityRing[sev] ?? severityRing.clean;
-  const issueTotal =
-    (d.smellCount ?? 0) + (d.ai?.issueCount ?? 0);
+  const ring = severityStyle[sev] ?? severityStyle.clean;
+  const issueTotal = (d.smellCount ?? 0) + (d.ai?.issueCount ?? 0);
 
   const title = useMemo(() => {
     const parts = [
       d.filePath,
       `Issues: ${issueTotal}`,
       d.complexityTier
-        ? `Complexity tier: ${d.complexityTier}`
+        ? `Complexity: ${d.complexityTier}`
         : undefined,
-      d.maxCyclomatic != null ? `Max cyclomatic: ${d.maxCyclomatic}` : undefined,
+      d.maxCyclomatic != null ? `Max cc: ${d.maxCyclomatic}` : undefined,
     ].filter(Boolean);
     return parts.join("\n");
   }, [d.filePath, d.complexityTier, d.maxCyclomatic, issueTotal]);
 
+  const canToggle = Boolean(d.onToggleFileExpand && d.hasDetailChildren);
+
   return (
     <div
       title={title}
-      className={`min-w-[160px] max-w-[220px] rounded-lg border px-3 py-2 shadow-sm ring-2 dark:border-slate-600 ${ring} ${
-        selected ? "outline outline-2 outline-blue-500" : ""
+      className={`w-[172px] rounded-lg border px-2.5 py-2 shadow-lg ring-1 transition-all duration-200 hover:brightness-110 ${ring} ${
+        selected ? "ring-2 ring-sky-500/80" : ""
       }`}
+      onClick={() => {
+        if (canToggle) {
+          d.onToggleFileExpand?.();
+        }
+      }}
+      onKeyDown={(e) => {
+        if (canToggle && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          d.onToggleFileExpand?.();
+        }
+      }}
+      role={canToggle ? "button" : undefined}
+      tabIndex={canToggle ? 0 : undefined}
     >
-      <Handle type="target" position={Position.Left} className="!bg-slate-400" />
+      <Handle
+        type="target"
+        position={Position.Top}
+        className="!h-1.5 !w-1.5 !border-0 !bg-zinc-500"
+      />
       <div className="flex items-start justify-between gap-1">
         <div className="min-w-0 flex-1">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            File · {d.complexityTier ?? "low"}
-          </div>
-          <div className="truncate font-mono text-xs font-semibold text-slate-900 dark:text-slate-100">
+          {canToggle && (
+            <span className="mr-1 inline text-[10px] text-zinc-500">
+              {d.detailExpanded ? "▼" : "▶"}
+            </span>
+          )}
+          <span className="truncate font-mono text-[11px] font-semibold text-zinc-100">
             {d.label}
-          </div>
+          </span>
         </div>
         <span
-          className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${
+          className={`shrink-0 rounded px-1 py-0.5 text-[9px] font-bold tabular-nums ${
             sev === "critical"
               ? "bg-red-600 text-white"
               : sev === "medium"
-                ? "bg-amber-500 text-slate-900"
-                : "bg-emerald-600/90 text-white"
+                ? "bg-amber-500 text-zinc-900"
+                : "bg-emerald-600 text-white"
           }`}
         >
           {issueTotal}
         </span>
       </div>
-      <div className="mt-1 flex flex-wrap gap-1 text-[10px] text-slate-600 dark:text-slate-300">
-        {d.maxCyclomatic != null && <span>cc≤{d.maxCyclomatic}</span>}
-        {(d.smellCount ?? 0) > 0 && (
-          <span className="rounded bg-amber-200/80 px-1 dark:bg-amber-900/50">
-            {d.smellCount} smells
-          </span>
-        )}
-        {d.ai && d.ai.issueCount > 0 && (
-          <span className="rounded bg-violet-200/80 px-1 dark:bg-violet-900/50">
-            {d.ai.issueCount} AI
-          </span>
-        )}
-        {d.onExpandFunctions && !d.functionsExpanded && (
-          <button
-            type="button"
-            className="rounded bg-slate-200 px-1.5 py-0.5 text-[9px] font-medium text-slate-800 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600"
-            onClick={(e) => {
-              e.stopPropagation();
-              d.onExpandFunctions?.();
-            }}
-          >
-            + functions
-          </button>
-        )}
+      <div className="mt-0.5 text-[9px] text-zinc-500">
+        {d.complexityTier ?? "low"} tier
+        {d.maxCyclomatic != null ? ` · cc≤${d.maxCyclomatic}` : ""}
       </div>
-      {d.ai?.explanationPreview && (
-        <p className="mt-1 line-clamp-2 text-[10px] leading-snug text-slate-600 dark:text-slate-400">
-          {d.ai.explanationPreview}
-        </p>
-      )}
       <Handle
         type="source"
-        position={Position.Right}
-        className="!bg-slate-400"
+        position={Position.Bottom}
+        className="!h-1.5 !w-1.5 !border-0 !bg-zinc-500"
       />
     </div>
   );

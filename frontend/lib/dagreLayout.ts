@@ -2,17 +2,17 @@ import dagre from "dagre";
 import type { Edge, Node } from "@xyflow/react";
 
 const NODE_DIM: Record<string, { w: number; h: number }> = {
-  folderNode: { w: 200, h: 52 },
-  fileNode: { w: 200, h: 112 },
-  functionNode: { w: 128, h: 56 },
+  folderNode: { w: 156, h: 48 },
+  fileNode: { w: 172, h: 76 },
+  functionNode: { w: 110, h: 42 },
+  issueNode: { w: 158, h: 38 },
   layoutRoot: { w: 4, h: 4 },
 };
 
 export type DagreEdge = { id: string; source: string; target: string };
 
 /**
- * Apply dagre layout. Nodes must have `id` and `type` set.
- * Returns new nodes with `position` set (top-left).
+ * Apply dagre layout (top-down by default for folder → file → detail).
  */
 export function applyDagreLayout(
   nodes: Node[],
@@ -25,11 +25,11 @@ export function applyDagreLayout(
 
   const g = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
   g.setGraph({
-    rankdir: options?.rankdir ?? "LR",
-    nodesep: 48,
-    ranksep: 72,
-    marginx: 24,
-    marginy: 24,
+    rankdir: options?.rankdir ?? "TB",
+    nodesep: 32,
+    ranksep: 56,
+    marginx: 32,
+    marginy: 32,
   });
 
   for (const n of nodes) {

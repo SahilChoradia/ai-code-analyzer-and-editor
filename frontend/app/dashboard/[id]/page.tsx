@@ -232,16 +232,17 @@ export default function DashboardPage() {
         <div className="mx-auto max-w-[1600px] space-y-6 px-4 pb-10">
           <section>
             <h2 className="mb-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
-              Dependency graph · functions · imports · intra-file calls
+              Code map · folders, files, issues
             </h2>
             <p className="mb-4 text-xs text-slate-500 dark:text-slate-400">
-              Dagre layout, folder groups (expand on click), filters, and direct
-              imports by default. Colors reflect severity; pan, zoom, and use the
-              panel for scope and function loading.
+              Dagre layout with lazy expansion: folders first, then files, then
+              issues and functions per file. Filters, focus mode, and import-only
+              edges keep the view readable.
             </p>
             <AnalysisGraphView
               graphData={graphData}
               aiInsights={aiInsights}
+              analysis={analysisPayload}
             />
           </section>
 

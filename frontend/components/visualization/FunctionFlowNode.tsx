@@ -10,30 +10,30 @@ function FunctionFlowNodeInner(props: NodeProps) {
   const cc = d.cyclomaticComplexity ?? 0;
   const hot = cc >= 10;
 
-  const title = `${d.functionName ?? d.label}() · cyclomatic ${cc}`;
+  const title = `${d.functionName ?? d.label}() · cc ${cc}`;
 
   return (
     <div
       title={title}
-      className={`rounded-md border px-2 py-1 text-left shadow-sm dark:border-slate-600 ${
+      className={`max-w-[110px] rounded-md border px-2 py-1 shadow-md ring-1 transition-all duration-200 ${
         hot
-          ? "border-orange-400 bg-orange-50 dark:bg-orange-950/40"
-          : "border-slate-200 bg-white dark:bg-slate-900/80"
-      } ${selected ? "outline outline-2 outline-blue-500" : ""}`}
+          ? "border-orange-700/50 bg-orange-950/40 ring-orange-900/40"
+          : "border-zinc-600/60 bg-zinc-900/90 ring-zinc-800/50"
+      } ${selected ? "ring-2 ring-sky-500/80" : ""}`}
     >
       <Handle
         type="target"
-        position={Position.Left}
-        className="!h-2 !w-2 !bg-slate-400"
+        position={Position.Top}
+        className="!h-1.5 !w-1.5 !border-0 !bg-zinc-500"
       />
-      <div className="font-mono text-[11px] font-medium text-slate-800 dark:text-slate-200">
+      <div className="truncate font-mono text-[10px] font-medium text-zinc-200">
         {d.label}()
       </div>
-      <div className="text-[9px] text-slate-500">cc {cc}</div>
+      <div className="text-[8px] text-zinc-500">cc {cc}</div>
       <Handle
         type="source"
-        position={Position.Right}
-        className="!h-2 !w-2 !bg-slate-400"
+        position={Position.Bottom}
+        className="!h-1.5 !w-1.5 !border-0 !bg-zinc-500"
       />
     </div>
   );

@@ -1,6 +1,7 @@
 import type { Edge, Node } from "@xyflow/react";
 import type { VizGraphData, VizGraphEdge, VizGraphNode } from "@/types/api";
 import { applyDagreLayout, type DagreEdge } from "@/lib/dagreLayout";
+import type { IssueChildDef } from "@/lib/graphIssueChildren";
 import {
   buildHierarchyLayoutEdges,
   buildVisibleGraph,
@@ -51,38 +52,16 @@ export function filterVisualizationGraph(
   return { nodes, edges };
 }
 
-function edgeVisuals(
-  kind: VizGraphEdge["kind"],
-  opts: { layoutOnly?: boolean },
-): Partial<Edge> {
-  if (opts.layoutOnly) {
-    return {
-      style: { opacity: 0, strokeWidth: 0 },
-      interactionWidth: 0,
-      selectable: false,
-      focusable: false,
-    };
-  }
-  switch (kind) {
-    case "import":
-      return {
-        style: { stroke: "#2563eb", strokeWidth: 1.5 },
-        animated: true,
-      };
-    case "call":
-      return {
-        style: { stroke: "#ea580c", strokeWidth: 1.2 },
-      };
-    case "contains":
-      return {
-        style: { stroke: "#94a3b8", strokeWidth: 1, strokeDasharray: "4 4" },
-      };
-    default:
-      return {};
-  }
-}
-
 const LAYOUT_ROOT_ID = "layout-root";
+
+function dirnameOf(path: string): string {
+  const n = normPath(path);
+  const i = n.lastIndexOf("/");
+  if (i <= 0) {
+    return "";
+  }
+  return n.slice(0, i);
+}
 
 function folderDisplayName(folderPath: string): string {
   const parts = folderPath.split("/").filter(Boolean);
@@ -110,26 +89,31 @@ function folderStats(
   return { files, subfolders };
 }
 
-function dirnameOf(path: string): string {
-  const n = normPath(path);
-  const i = n.lastIndexOf("/");
-  if (i <= 0) {
-    return "";
-  }
-  return n.slice(0, i);
-}
-
 export type FlowCallbacks = {
   onToggleFolder: (folderPath: string) => void;
-  onExpandFileFunctions: (filePath: string) => void;
+  onToggleFileExpand: (filePath: string) => void;
 };
 
 export type BuildFlowOptions = {
   visibility: VisibilityOptions;
   callbacks: FlowCallbacks;
-  /** Include invisible layout root for dagre (filtered out before return) */
   useLayoutRoot: boolean;
+  issueChildrenByFile: Map<string, IssueChildDef[]>;
 };
+
+function toFlowEdge(
+  e: Pick<VizGraphEdge, "id" | "source" | "target">,
+  stroke: string,
+): Edge {
+  return {
+    id: e.id,
+    source: e.source,
+    target: e.target,
+    type: "graphFade",
+    style: { stroke },
+    data: {},
+  };
+}
 
 /**
  * Build positioned React Flow nodes and visible edges from graph data.
@@ -158,6 +142,17 @@ export function toFlowElements(
     ...vizEdges.map((e) => ({ id: e.id, source: e.source, target: e.target })),
   ];
 
+  const displayEdges: Edge[] = vizEdges.map((e) =>
+    toFlowEdge(
+      e,
+      e.kind === "import"
+        ? "#a1a1aa"
+        : e.kind === "call"
+          ? "#d97706"
+          : "#71717a",
+    ),
+  );
+
   const flowNodes: Node[] = [];
 
   for (const fp of folderPaths) {
@@ -180,21 +175,55 @@ export function toFlowElements(
 
   for (const n of fileNodes) {
     const fpNorm = normPath(n.filePath);
-    const canLoadFns =
-      opts.visibility.showFunctions &&
-      !opts.visibility.expandedFunctionFiles.has(fpNorm);
+    const expanded = opts.visibility.expandedFiles.has(fpNorm);
+    const issueKids = opts.issueChildrenByFile.get(fpNorm) ?? [];
+    const hasChildren =
+      issueKids.length > 0 ||
+      graphData.nodes.some(
+        (x) =>
+          x.kind === "function" && normPath(x.filePath) === fpNorm,
+      );
+
     flowNodes.push({
       id: n.id,
       type: "fileNode",
       position: { x: 0, y: 0 },
       data: {
         ...n,
-        functionsExpanded: opts.visibility.expandedFunctionFiles.has(fpNorm),
-        onExpandFunctions: canLoadFns
-          ? () => opts.callbacks.onExpandFileFunctions(fpNorm)
+        detailExpanded: expanded,
+        hasDetailChildren: hasChildren,
+        onToggleFileExpand: hasChildren
+          ? () => opts.callbacks.onToggleFileExpand(fpNorm)
           : undefined,
       },
     });
+
+    if (expanded) {
+      for (const iss of issueKids) {
+        flowNodes.push({
+          id: iss.id,
+          type: "issueNode",
+          position: { x: 0, y: 0 },
+          data: {
+            label: iss.label,
+            severity: iss.severity,
+            source: iss.source,
+          },
+        });
+        const layoutId = `layout:issue:${iss.id}`;
+        layoutEdgeList.push({
+          id: layoutId,
+          source: n.id,
+          target: iss.id,
+        });
+        displayEdges.push(
+          toFlowEdge(
+            { id: `contains:${iss.id}`, source: n.id, target: iss.id },
+            "#52525b",
+          ),
+        );
+      }
+    }
   }
 
   for (const n of funcNodes) {
@@ -238,17 +267,10 @@ export function toFlowElements(
   }
 
   const positioned = applyDagreLayout(flowNodes, layoutEdgeList, {
-    rankdir: "LR",
+    rankdir: "TB",
   });
 
   const nodesOut = positioned.filter((n) => n.id !== LAYOUT_ROOT_ID);
-
-  const displayEdges: Edge[] = vizEdges.map((e) => ({
-    id: e.id,
-    source: e.source,
-    target: e.target,
-    ...edgeVisuals(e.kind, {}),
-  }));
 
   return { nodes: nodesOut, edges: displayEdges };
 }

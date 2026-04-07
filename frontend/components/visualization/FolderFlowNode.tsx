@@ -15,12 +15,12 @@ export type FolderNodeData = {
 function FolderFlowNodeInner(props: NodeProps) {
   const d = props.data as unknown as FolderNodeData;
   const { selected } = props;
-  const summary = `${d.directFileCount} file(s), ${d.subfolderCount} subfolder(s)`;
+  const summary = `${d.directFileCount} files · ${d.subfolderCount} subfolders`;
 
   return (
     <div
-      className={`min-w-[180px] max-w-[240px] cursor-pointer rounded-lg border border-indigo-300 bg-indigo-50/90 px-3 py-2 shadow-sm ring-1 ring-indigo-400/30 dark:border-indigo-600 dark:bg-indigo-950/50 dark:ring-indigo-500/30 ${
-        selected ? "outline outline-2 outline-blue-500" : ""
+      className={`w-[156px] cursor-pointer rounded-lg border border-zinc-600/60 bg-zinc-900/95 px-2.5 py-2 shadow-lg ring-1 ring-zinc-700/50 transition-all duration-200 hover:border-zinc-500 hover:ring-zinc-600 ${
+        selected ? "ring-2 ring-sky-500/70" : ""
       }`}
       onClick={() => {
         d.onToggle();
@@ -37,29 +37,27 @@ function FolderFlowNodeInner(props: NodeProps) {
     >
       <Handle
         type="target"
-        position={Position.Left}
-        className="!h-2 !w-2 !bg-indigo-400"
+        position={Position.Top}
+        className="!h-1.5 !w-1.5 !border-0 !bg-zinc-500"
       />
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-lg leading-none text-indigo-700 dark:text-indigo-300">
+      <div className="flex items-center gap-2">
+        <span className="text-sm leading-none text-zinc-400">
           {d.expanded ? "▼" : "▶"}
         </span>
         <div className="min-w-0 flex-1 text-left">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-indigo-600 dark:text-indigo-400">
+          <div className="text-[8px] font-bold uppercase tracking-wider text-zinc-500">
             Folder
           </div>
-          <div className="truncate font-mono text-xs font-semibold text-indigo-950 dark:text-indigo-100">
+          <div className="truncate font-mono text-[11px] font-semibold text-zinc-100">
             {d.label}
           </div>
         </div>
       </div>
-      <div className="mt-1 text-[10px] text-indigo-800/80 dark:text-indigo-200/80">
-        {summary}
-      </div>
+      <div className="mt-1 text-[9px] text-zinc-500">{summary}</div>
       <Handle
         type="source"
-        position={Position.Right}
-        className="!h-2 !w-2 !bg-indigo-400"
+        position={Position.Bottom}
+        className="!h-1.5 !w-1.5 !border-0 !bg-zinc-500"
       />
     </div>
   );
