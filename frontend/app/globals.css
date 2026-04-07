@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --surface: 248 250 252;
+  --surface-muted: 241 245 249;
+  --accent: 59 130 246;
+  --accent-hover: 37 99 235;
+}
+
+.dark {
+  --surface: 15 23 42;
+  --surface-muted: 30 41 59;
+  --accent: 96 165 250;
+  --accent-hover: 59 130 246;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+}
+
+/* React Flow: fill explicit-height parent (flex min-height alone often leaves pane at 0). */
+.react-flow {
+  width: 100%;
+  height: 100%;
+}
+
+@layer utilities {
+  .surface-card {
+    @apply rounded-2xl border border-slate-200/90 bg-white/95 shadow-sm backdrop-blur-sm transition-[box-shadow,border-color,transform] duration-300 ease-out dark:border-slate-800/90 dark:bg-slate-900/55;
+  }
+  .surface-card-hover {
+    @apply hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md dark:hover:border-slate-700 dark:hover:shadow-lg dark:hover:shadow-slate-950/40;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-[background-color,box-shadow,transform] duration-200 hover:bg-blue-500 hover:shadow-lg active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-400;
+  }
+}

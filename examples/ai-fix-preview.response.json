@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "message": "Fix preview ready",
+  "data": {
+    "filePath": "src/utils/helpers.ts",
+    "originalCode": "export function add(a: any, b: any) {\n  return a + b;\n}\n",
+    "updatedCode": "export function add(a: number, b: number): number {\n  return a + b;\n}\n",
+    "issues": [
+      {
+        "message": "[implicit-any] Parameters implicitly typed as any weaken type safety",
+        "line": 1,
+        "severity": "warning",
+        "source": "static",
+        "ruleId": "implicit-any"
+      },
+      {
+        "message": "Added explicit parameter and return types for clarity",
+        "line": 1,
+        "severity": "info",
+        "source": "ai"
+      }
+    ],
+    "explanation": "The file used implicit any on parameters. Adding number types documents intent and enables better checking.",
+    "whatChanged": "- Typed parameters `a` and `b` as `number`\\n- Added explicit `: number` return type",
+    "whyChanged": "Removes implicit any, aligns with strict TypeScript style, and matches typical utility helper expectations.",
+    "improvementSummary": "Stronger typing with no behavior change.",
+    "aiGenerated": true
+  }
+}

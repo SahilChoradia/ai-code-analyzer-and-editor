@@ -1,0 +1,48 @@
+# AI Code Understanding & Refactoring Engine — local / demo stack
+# Copy .env.docker.example → .env.docker and set MONGODB_URI + GEMINI_API_KEY (optional).
+# Usage: docker compose up --build
+
+name: ai-code-engine
+
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    env_file:
+      - path: .env.docker
+        required: false
+    environment:
+      NODE_ENV: production
+      REDIS_URL: redis://redis:6379
+      WORKER_EMBEDDED: "true"
+      LOG_LEVEL: info
+    depends_on:
+      - redis
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:4000
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  redis_data: {}

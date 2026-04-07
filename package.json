@@ -1,0 +1,8 @@
+{
+  "name": "ai-code-understanding-engine",
+  "private": true,
+  "description": "Monorepo root — see README.md",
+  "scripts": {
+    "verify": "npm run build --prefix backend && npm run build --prefix frontend"
+  }
+}
