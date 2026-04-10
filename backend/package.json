@@ -5,14 +5,15 @@
   "description": "AI Code Understanding & Refactoring Engine — API server",
   "main": "dist/main.js",
   "scripts": {
-    "build": "node ./node_modules/typescript/bin/tsc",
-    "start": "node ./dist/main.js",
-    "dev": "node ./node_modules/tsx/dist/cli.mjs watch src/main.ts",
-    "worker": "node ./dist/worker.main.js",
-    "dev:worker": "node ./node_modules/tsx/dist/cli.mjs watch src/worker.main.ts",
-    "postinstall": "node ./scripts/download-wasm.mjs",
-    "setup:wasm": "node ./scripts/download-wasm.mjs",
-    "test": "node ./node_modules/typescript/bin/tsc --noEmit"
+    "prebuild": "node -e \"const fs=require('fs'); if(fs.existsSync('dist')){fs.rmSync('dist',{recursive:true})}\"",
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "dev": "tsx watch src/main.ts",
+    "worker": "node dist/worker.main.js",
+    "dev:worker": "tsx watch src/worker.main.ts",
+    "postinstall": "node scripts/download-wasm.mjs",
+    "setup:wasm": "node scripts/download-wasm.mjs",
+    "test": "tsc --noEmit"
   },
   "engines": {
     "node": ">=20"
@@ -36,19 +37,19 @@
     "pino-http": "^10.4.0",
     "simple-git": "^3.27.0",
     "web-tree-sitter": "^0.24.7",
-    "zod": "^3.24.1"
-  },
-  "devDependencies": {
-    "@types/adm-zip": "^0.5.7",
-    "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.0",
-    "@types/express-session": "^1.18.2",
-    "@types/multer": "^1.4.12",
+    "zod": "^3.24.1",
+    "typescript": "^5.7.3",
     "@types/node": "^22.10.5",
+    "@types/express": "^5.0.0",
+    "@types/cors": "^2.8.17",
+    "@types/multer": "^1.4.12",
+    "@types/adm-zip": "^0.5.7",
     "@types/passport": "^1.0.17",
     "@types/passport-github2": "^1.2.9",
+    "@types/express-session": "^1.18.2"
+  },
+  "devDependencies": {
     "pino-pretty": "^13.0.0",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.3"
+    "tsx": "^4.19.2"
   }
 }

@@ -9,8 +9,8 @@ services:
     # region: oregon        # optional — set in dashboard if you prefer
     # plan: free            # optional — pick in dashboard (free tier may sleep when idle)
     rootDir: backend
-    buildCommand: npm ci && npm run build
-    startCommand: node dist/main.js
+    buildCommand: npm install && npm run build
+    startCommand: npm start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
