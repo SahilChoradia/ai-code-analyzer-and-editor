@@ -1,5 +1,7 @@
+# Root `.gitignore` covers the monorepo; keep frontend-specific paths here.
+
 .next/
-node_modules/
-.env.local
-*.log
 out/
+.swc/
+node_modules/
+*.log

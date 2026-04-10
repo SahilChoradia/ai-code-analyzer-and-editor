@@ -1,0 +1,84 @@
+# --- Dependencies ---
+node_modules/
+
+# --- Environment & secrets ---
+# Ignore all env files; allow committed templates
+.env*
+!.env.example
+!.env*.example
+
+# --- Next.js (frontend) ---
+frontend/.next/
+frontend/out/
+frontend/.swc/
+
+# --- Backend build output ---
+backend/dist/
+backend/build/
+
+# --- TypeScript ---
+*.tsbuildinfo
+
+# --- Logs & diagnostics ---
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# --- Tests & coverage ---
+coverage/
+.nyc_output/
+*.lcov
+
+# --- Tree-sitter WASM (fetched by backend postinstall) ---
+backend/wasm/
+
+# --- Local / runtime data under repo (if used) ---
+uploads/
+tmp/
+temp/
+*.pid
+*.seed
+*.pid.lock
+
+# --- OS ---
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+Desktop.ini
+
+# --- Editors & tools ---
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-*
+
+# --- Framework / bundler caches ---
+.turbo/
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+*.pem
+
+# --- Deploy / hosting ---
+.vercel/
+.netlify/
+
+# --- Debug ---
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# --- Redis (local dump) ---
+dump.rdb

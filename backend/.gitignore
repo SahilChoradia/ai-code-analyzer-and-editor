@@ -1,6 +1,7 @@
-node_modules/
+# Root `.gitignore` covers the monorepo; keep backend-specific paths here.
+
 dist/
-.env
-*.log
+node_modules/
 coverage/
-.DS_Store
+wasm/
+*.log
