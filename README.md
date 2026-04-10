@@ -56,7 +56,7 @@ flowchart TB
 
 ---
 
-## Quick start (local, no Docker)
+## Quick start (local)
 
 ### Prerequisites
 
@@ -95,21 +95,6 @@ App: `http://localhost:3000`
 cd backend
 npm run dev:worker
 ```
-
----
-
-## Docker Compose
-
-1. Copy env file: `cp .env.docker.example .env.docker` and set **`MONGODB_URI`** (required) and optionally **`GEMINI_API_KEY`**.
-2. From repo root:
-
-```bash
-docker compose up --build
-```
-
-- Frontend: http://localhost:3000  
-- API: http://localhost:4000  
-- Redis: `localhost:6379` (for debugging only; not exposed in production setups)
 
 ---
 
@@ -156,7 +141,7 @@ npm run build
 subst X: /d
 ```
 
-CI, Docker, and Vercel builds are unaffected because their working directories do not include `&`.
+CI and Vercel builds are unaffected because their working directories do not include `&`.
 
 Runs production builds for `backend` and `frontend`. For an end-to-end manual test:
 
@@ -172,7 +157,6 @@ Runs production builds for `backend` and `frontend`. For an end-to-end manual te
 backend/          Express API, Mongoose, Tree-sitter WASM, BullMQ worker
 frontend/         Next.js 15 App Router, TanStack Query, React Flow
 docs/             DEPLOYMENT.md (+ screenshots when you add them)
-docker-compose.yml
 ```
 
 ---

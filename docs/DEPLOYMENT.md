@@ -10,7 +10,7 @@ This stack is **API + MongoDB + optional Redis + optional Gemini**. Never commit
 3. **Build**
    - Install command: `npm ci` (or `npm install --ignore-scripts` if your path has issues on Windows CI; Linux builders are usually fine).
    - Build: `npm run build`
-   - Output: Next.js default (no need for Docker on Vercel).
+   - Output: Next.js default static/SSR output on Vercel’s Node runtime.
 4. After deploy, open the Vercel URL and confirm the home page loads and can reach the API (browser network tab).
 
 ## Backend — Railway or Render
@@ -36,7 +36,7 @@ This stack is **API + MongoDB + optional Redis + optional Gemini**. Never commit
 2. **Build**: `npm ci && npm run build`
 3. **Start**: `node dist/main.js`
 4. Same env vars as Railway.
-5. Install **Git** on the image if you use GitHub clone ingestion (`apt` in a `render.yaml` or custom Dockerfile). The provided `backend/Dockerfile` already installs `git`.
+5. If you use **GitHub clone ingestion**, ensure **Git** is available on the host (Render’s native Node environment includes it; for a fully custom image, install `git` yourself).
 
 ## Redis — Upstash or Redis Cloud
 
@@ -49,12 +49,6 @@ This stack is **API + MongoDB + optional Redis + optional Gemini**. Never commit
 1. Create a cluster and database user.
 2. Network access: allow **0.0.0.0/0** for serverless hosts, or the provider’s egress IPs.
 3. Connection string as `MONGODB_URI`.
-
-## Docker (full stack on one machine)
-
-1. `cp .env.docker.example .env.docker` and set `MONGODB_URI` (and optionally `GEMINI_API_KEY`).
-2. `docker compose up --build`
-3. UI: http://localhost:3000 — API: http://localhost:4000
 
 ## Checklist after deploy
 
