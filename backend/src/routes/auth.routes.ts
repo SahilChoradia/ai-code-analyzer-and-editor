@@ -13,15 +13,24 @@ export function createAuthRouter(env: Env, log: Logger): Router {
 
   router.get(
     "/auth/github",
+    (req, res, next) => {
+      log.info("Starting GitHub OAuth flow");
+      next();
+    },
     passport.authenticate("github", { scope: ["read:user", "repo"] }),
   );
 
   router.get(
     "/auth/github/callback",
+    (req, res, next) => {
+      log.info({ query: req.query }, "Reached GitHub OAuth callback");
+      next();
+    },
     passport.authenticate("github", {
       failureRedirect: `${frontend}/login?error=oauth`,
     }),
     (_req, res) => {
+      log.info("GitHub OAuth successful, redirecting to dashboard");
       res.redirect(`${frontend}/dashboard`);
     },
   );
