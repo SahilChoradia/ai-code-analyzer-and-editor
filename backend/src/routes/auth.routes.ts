@@ -12,8 +12,7 @@ export function createAuthRouter(env: Env, log: Logger): Router {
   const frontend = env.FRONTEND_URL!;
 
   router.get(
-    "/auth/github",
-    (req, res, next) => {
+    (_req, _res, next) => {
       log.info("Starting GitHub OAuth flow");
       next();
     },
@@ -22,7 +21,7 @@ export function createAuthRouter(env: Env, log: Logger): Router {
 
   router.get(
     "/auth/github/callback",
-    (req, res, next) => {
+    (req, _res, next) => {
       log.info({ query: req.query }, "Reached GitHub OAuth callback");
       next();
     },
