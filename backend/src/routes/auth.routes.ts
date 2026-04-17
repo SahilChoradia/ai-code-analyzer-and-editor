@@ -24,9 +24,16 @@ export function createAuthRouter(env: Env, log: Logger): Router {
     passport.authenticate("github", {
       failureRedirect: `${frontend}/login?error=oauth`,
     }),
-    (_req: Request, res: Response) => {
+    (req: Request, res: Response) => {
       log.info("GitHub OAuth successful, redirecting to dashboard");
-      res.redirect(`${frontend}/dashboard`);
+      // Explicitly save the session before redirecting to ensure it's persisted
+      // across domains (important for Render + Vercel setups)
+      req.session.save((err) => {
+        if (err) {
+          log.warn({ err }, "Session save failed during GitHub callback");
+        }
+        res.redirect(`${frontend}/dashboard`);
+      });
     },
   );
 
@@ -37,16 +44,21 @@ export function createAuthRouter(env: Env, log: Logger): Router {
         next(err);
         return;
       }
+      const cookieOptions = {
+        path: "/",
+        secure: true,
+        sameSite: "none" as const,
+      };
       if (req.session) {
         req.session.destroy((e: unknown) => {
           if (e) {
             log.warn({ err: e }, "Session destroy failed");
           }
-          res.clearCookie("ace.sid", { path: "/" });
+          res.clearCookie("ace.sid", cookieOptions);
           sendSuccess(res, { ok: true }, { message: "Signed out" });
         });
       } else {
-        res.clearCookie("ace.sid", { path: "/" });
+        res.clearCookie("ace.sid", cookieOptions);
         sendSuccess(res, { ok: true }, { message: "Signed out" });
       }
     });

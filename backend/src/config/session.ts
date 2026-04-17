@@ -18,8 +18,10 @@ export function createSessionMiddleware(env: Env): ReturnType<typeof session> {
     cookie: {
       maxAge: 14 * 24 * 60 * 60 * 1000,
       httpOnly: true,
-      secure: env.NODE_ENV === "production",
-      sameSite: env.NODE_ENV === "production" ? "none" : "lax",
+      // Force secure and sameSite: none for cross-domain cookie stability (Render/Vercel)
+      // Note: This requires HTTPS to be sent back by the browser.
+      secure: true,
+      sameSite: "none",
     },
   });
 }

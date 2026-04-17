@@ -39,7 +39,7 @@ function LoginContent() {
   }, [router]);
 
   const startGithubLogin = () => {
-    window.location.href = "https://ai-github-analyzer-esvo.onrender.com/auth/github";
+    window.location.href = `${getApiOrigin()}/auth/github`;
   };
 
   if (checking) {

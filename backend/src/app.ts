@@ -18,16 +18,13 @@ export function createApp(env: Env, log: Logger): express.Application {
   const app = express();
 
   app.disable("x-powered-by");
-  if (env.NODE_ENV === "production") {
-    app.set("trust proxy", 1);
-  }
+  // Always trust proxy in cloud environments (Render/Railway/Vercel)
+  // This is required for secure cookies to work over HTTPS proxies
+  app.set("trust proxy", 1);
   app.use(helmet());
   app.use(
     cors({
-      origin:
-        env.githubOAuthEnabled && env.FRONTEND_URL
-          ? env.FRONTEND_URL
-          : true,
+      origin: env.FRONTEND_URL || true,
       credentials: true,
     }),
   );
